@@ -25,19 +25,25 @@ public class Page2Panel extends JPanel {
     private JPanel previewPanel;
     private Thread cameraThread;
 
-    public Page2Panel() {
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+
+    public Page2Panel(CardLayout layout, JPanel container) {
+        this.cardLayout = layout;
+        this.cardPanel = container;
+
         setLayout(null);
         setBackground(new Color(0xFF, 0xF4, 0xC5));
 
-        // === Camera Feed Label (LEFT side) ===
+        // === Camera Label ===
         cameraLabel = new JLabel();
-        cameraLabel.setBounds(50, 100, 720, 540);  // larger and positioned to the left
+        cameraLabel.setBounds(50, 100, 720, 540);
         cameraLabel.setHorizontalAlignment(JLabel.CENTER);
         cameraLabel.setVerticalAlignment(JLabel.CENTER);
         cameraLabel.setLayout(null);
         add(cameraLabel);
 
-        // === Countdown Overlay ===
+        // === Countdown Label ===
         countdownLabel = new JLabel("", SwingConstants.CENTER);
         countdownLabel.setBounds(0, 0, 720, 540);
         countdownLabel.setFont(new Font("Arial", Font.BOLD, 100));
@@ -58,7 +64,7 @@ public class Page2Panel extends JPanel {
         editButton.setBounds(1190, 600, 150, 50);
         add(editButton);
 
-        // === Preview Panel (RIGHT side) ===
+        // === Preview Panel ===
         previewPanel = new JPanel(null);
         previewPanel.setBounds(850, 20, 400, 550);
         previewPanel.setOpaque(false);
@@ -69,7 +75,7 @@ public class Page2Panel extends JPanel {
         }
         add(previewPanel);
 
-        // === Button Listeners ===
+        // === Listeners ===
         captureButton.addActionListener(e -> {
             if (capturing || !capture.isOpened()) return;
             capturing = true;
@@ -81,6 +87,16 @@ public class Page2Panel extends JPanel {
         retakeButton.addActionListener(e -> {
             capturedImages.clear();
             for (JLabel label : previewLabels) label.setIcon(null);
+        });
+
+        editButton.addActionListener(e -> {
+            if (capturedImages.size() == 3) {
+                Page3Panel page3 = new Page3Panel(capturedImages); // Page3 accepts image list
+                cardPanel.add(page3, "page3");
+                cardLayout.show(cardPanel, "page3");
+            } else {
+                JOptionPane.showMessageDialog(this, "Please capture 3 photos first.");
+            }
         });
 
         startCamera();
@@ -150,8 +166,7 @@ public class Page2Panel extends JPanel {
                 }
                 try {
                     Thread.sleep(33);
-                } catch (InterruptedException ignored) {
-                }
+                } catch (InterruptedException ignored) {}
             }
         });
         cameraThread.setDaemon(true);
@@ -186,5 +201,3 @@ public class Page2Panel extends JPanel {
         return srcImg.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
     }
 }
-
-
